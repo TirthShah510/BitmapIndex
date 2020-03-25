@@ -1,5 +1,7 @@
 package org.la2;
 
+import org.apache.commons.lang3.StringUtils;
+import org.la2.Configuration;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
@@ -11,9 +13,17 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
+
+
 public class IndexByBitSet {
 
     public static void main(String args[]) throws IOException, NoSuchFieldException, IllegalAccessException {
+
+        System.gc();
+        Runtime runtime = Runtime.getRuntime();
+        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+        System.out.println(usedMemory);
+        System.out.println(Runtime.getRuntime().maxMemory());
 
         File input = new File(Configuration.FILE_PATH, Configuration.INPUT_FILE_NAME);
         BufferedReader bufferedReader = null;
@@ -31,49 +41,28 @@ public class IndexByBitSet {
         HashMap<String, Integer> indexOfEmpid = new HashMap<>();
         HashMap<String, Integer> indexOfGender = new HashMap<>();
         HashMap<String, Integer> indexOfDept = new HashMap<>();
+        ArrayList<BitSet> arrayOfBitSetForEmpid1 = new ArrayList<>();
+        ArrayList<BitSet> arrayOfBitSetForGender1 = new ArrayList<>();
+        ArrayList<BitSet> arrayOfBitSetForDept1 = new ArrayList<>();
+        HashMap<String, Integer> indexOfEmpid1 = new HashMap<>();
+        HashMap<String, Integer> indexOfGender1 = new HashMap<>();
+        HashMap<String, Integer> indexOfDept1 = new HashMap<>();
 
         int indexEmpid=0;
         int indexGender=0;
         int indexDept=0;
-        int counter=0;
+        int currentTuple=0;
         while ((line = bufferedReader.readLine()) != null) {
 
             String gender = ""+line.charAt(43);
             String dept = line.substring(44,47);
             String empID = line.substring(0, 8);
-            indexEmpid = getIndexDept(numOfLines, arrayOfBitSetForEmpid, indexOfEmpid, indexEmpid, counter, empID);
+            indexEmpid = getIndexDept(numOfLines, arrayOfBitSetForEmpid, indexOfEmpid, indexEmpid, currentTuple, empID);
 
-            indexGender = getIndexDept(numOfLines, arrayOfBitSetForGender, indexOfGender, indexGender, counter, gender);
+            indexGender = getIndexDept(numOfLines, arrayOfBitSetForGender, indexOfGender, indexGender, currentTuple, gender);
 
-           /* if(indexOfGender.containsKey(gender)){
-                int key = indexOfGender.get(gender);
-                BitSet bitSet = arrayOfBitSetForGender.get(key);
-                bitSet.set(counter);
-            }else{
-                arrayOfBitSetForGender.add(new BitSet(numOfLines));
-                BitSet bitSet = arrayOfBitSetForGender.get(arrayOfBitSetForGender.size()-1);
-                bitSet.set(counter);
-                indexOfGender.put(gender, indexGender);
-                indexGender++;
-            }*/
-
-            indexDept = getIndexDept(numOfLines, arrayOfBitSetForDept, indexOfDept, indexDept, counter, dept);
-            /*for (int key : indexOfEmpid.keySet()) {
-                if(indexOfEmpid.get(key).equals(empID)){
-                    BitSet bitSet = arrayOfBitSetForEmpid.get(key);
-                    bitSet.set(counter);
-                    newEmpid = true;
-                    break;
-                }
-            }*/
-            /*if (!newEmpid){
-                arrayOfBitSetForEmpid.add(new BitSet(numOfLines));
-                BitSet bitSet = arrayOfBitSetForEmpid.get(arrayOfBitSetForEmpid.size()-1);
-                bitSet.set(counter);
-                indexOfEmpid.put(index, empID);
-                index++;
-            }*/
-            counter++;
+            indexDept = getIndexDept(numOfLines, arrayOfBitSetForDept, indexOfDept, indexDept, currentTuple, dept);
+            currentTuple++;
         }
 
         for (BitSet bitset: arrayOfBitSetForEmpid) {
@@ -98,7 +87,7 @@ public class IndexByBitSet {
             System.out.println("true");
         }*/
 
-        System.out.println(System.currentTimeMillis() - startTime);
+        System.out.println("Time to create bitmap index: "+(System.currentTimeMillis() - startTime));
 
         /*Field f1 = ArrayList.class.getDeclaredField("elementData");
         f1.setAccessible(true);
@@ -115,20 +104,74 @@ public class IndexByBitSet {
         int capacityDept = ((Object[]) f3.get(arrayOfBitSetForDept)).length;
         System.out.println("Capacity: "+ capacityDept);*/
 
+
+        for (BitSet bitset: arrayOfBitSetForEmpid) {
+            int zeroCounter = 0;
+            int returnIndex = bitset.nextSetBit(0);
+            zeroCounter = returnIndex;
+            String compressedBitMap="";
+            String compressedBitMap1;
+            String compressedBitMap2;
+
+            compressedBitMap = createCompressedBitmap(zeroCounter, compressedBitMap);
+
+            int lengthCounter = 0;
+            while(returnIndex >=0 && lengthCounter<=(bitset.length()-2)){
+                int previousSetBitIndex = returnIndex;
+                returnIndex = bitset.nextSetBit(returnIndex+1);
+                if(returnIndex >=0) {
+                    zeroCounter = returnIndex - previousSetBitIndex - 1;
+                    compressedBitMap = createCompressedBitmap(zeroCounter, compressedBitMap);
+                }
+                lengthCounter++;
+
+            }
+            arrayOfBitSetForEmpid1.add(new BitSet(compressedBitMap.length()));
+            BitSet bitSet = arrayOfBitSetForEmpid1.get(arrayOfBitSetForEmpid1.size()-1);
+            for (int i=0; i<compressedBitMap.length(); i++){
+                if(compressedBitMap.charAt(i) == '1'){
+                    bitSet.set(i);
+                }
+            }
+            for (BitSet bitset1: arrayOfBitSetForEmpid1) {
+                System.out.println(bitset1.get(0)+" "+bitset1.get(1)+" "+bitset1.get(2)+" "+bitset1.get(3)+" "+bitset1.get(4));
+            }
+            System.out.println(compressedBitMap);
+            compressedBitMap = "";
+
+        }
     }
 
-    private static int getIndexDept(int numOfLines, ArrayList<BitSet> arrayOfBitSetForDept, HashMap<String, Integer> indexOfDept, int indexDept, int counter, String dept) {
-        if(indexOfDept.containsKey(dept)){
-            int key = indexOfDept.get(dept);
-            BitSet bitSet = arrayOfBitSetForDept.get(key);
-            bitSet.set(counter);
+    private static String createCompressedBitmap(int zeroCounter, String compressedBitMap) {
+        String compressedBitMap1;
+        String compressedBitMap2;
+        if(zeroCounter==1){
+            compressedBitMap += "01";
+        }else if(zeroCounter == 0){
+            compressedBitMap += "00";
         }else{
-            arrayOfBitSetForDept.add(new BitSet(numOfLines));
-            BitSet bitSet = arrayOfBitSetForDept.get(arrayOfBitSetForDept.size()-1);
-            bitSet.set(counter);
-            indexOfDept.put(dept, indexDept);
-            indexDept++;
+            compressedBitMap1 = Integer.toBinaryString(zeroCounter);
+            int j = (int) Math.ceil(Math.log(zeroCounter) / Math.log(2));
+            compressedBitMap2 = StringUtils.leftPad("0", j, "1");
+            compressedBitMap += compressedBitMap2 + compressedBitMap1;
+            zeroCounter = 0;
         }
-        return indexDept;
+        return compressedBitMap;
+    }
+
+    private static int getIndexDept(int numOfLines, ArrayList<BitSet> arrayListOfBitsetObjects, HashMap<String, Integer>
+            hmapForBitsetObject, int indexForArrayList, int currentTuple, String bitmapKey) {
+        if(hmapForBitsetObject.containsKey(bitmapKey)){
+            int key = hmapForBitsetObject.get(bitmapKey);
+            BitSet bitSet = arrayListOfBitsetObjects.get(key);
+            bitSet.set(currentTuple);
+        }else{
+            arrayListOfBitsetObjects.add(new BitSet(numOfLines));
+            BitSet bitSet = arrayListOfBitsetObjects.get(arrayListOfBitsetObjects.size()-1);
+            bitSet.set(currentTuple);
+            hmapForBitsetObject.put(bitmapKey, indexForArrayList);
+            indexForArrayList++;
+        }
+        return indexForArrayList;
     }
 }
