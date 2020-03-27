@@ -52,14 +52,20 @@ public class BitmapCreation {
 
         System.out.println("Time to create bitmap index: " + (System.currentTimeMillis() - startTime));
 
+        /*printBitMap(indexOfEmpid);
+        printBitMap(indexOfGender);
+        printBitMap(indexOfDept);*/
         startTime = System.currentTimeMillis(); // start time for creating compressed bitmap index
 
         readAllBitmapIndexObjectToCreateCompressed(indexOfEmpid, arrayOfCompressedBitSetForEmpId);
-        System.out.println("Employee Id BitMap Created");
+        System.out.println("Employee Id Compressed BitMap Created");
+        //printCompressedBitMap(arrayOfCompressedBitSetForEmpId);
         readAllBitmapIndexObjectToCreateCompressed(indexOfGender, arrayOfCompressedBitSetForGender);
-        System.out.println("Gender BitMap Created");
+        System.out.println("Gender Compressed BitMap Created");
+        //printCompressedBitMap(arrayOfCompressedBitSetForGender);
         readAllBitmapIndexObjectToCreateCompressed(indexOfDept, arrayOfCompressedBitSetForDept);
-        System.out.println("Dept BitMap Created");
+        System.out.println("Dept Compressed BitMap Created");
+        //printCompressedBitMap(arrayOfCompressedBitSetForDept);
 
         System.out.println("Compressed EmpId BitMap MemoryUsage: ");
         getObjectMemoryUsage(arrayOfCompressedBitSetForEmpId);
@@ -99,7 +105,7 @@ public class BitmapCreation {
         compressedBitMap = createCompressedBitmap(zeroCounter, compressedBitMap);
 
         int lengthCounter = 0;
-        long beginTime = System.currentTimeMillis();
+        //long beginTime = System.currentTimeMillis();
         while (returnIndex >= 0 && lengthCounter <= (bitset.length() - 2)) {
             int previousSetBitIndex = returnIndex;
             returnIndex = bitset.nextSetBit(returnIndex + 1);
@@ -109,7 +115,7 @@ public class BitmapCreation {
             }
             lengthCounter++;
         }
-        System.out.println("Time to create compressed BitMap String: " + (System.currentTimeMillis() - beginTime));
+        //System.out.println("Time to create compressed BitMap String: " + (System.currentTimeMillis() - beginTime));
         arrayOfBitSetForCompressedIndexKey.add(new BitSet(compressedBitMap.length()));
         BitSet bitSet = arrayOfBitSetForCompressedIndexKey.get(arrayOfBitSetForCompressedIndexKey.size() - 1);
         for (int i = 0; i < compressedBitMap.length(); i++) {
@@ -136,9 +142,17 @@ public class BitmapCreation {
     }
 
     @SuppressWarnings("unused")
-    private static void printBitMap(ArrayList<BitSet> bitsets) {
-        for (BitSet bitset : bitsets) {
-            System.out.println(bitset.get(0) + " " + bitset.get(1) + " " + bitset.get(2) + " " + bitset.get(3) + " " + bitset.get(4));
+    private static void printBitMap(HashMap<String, BitSet> hashMapOfBitsetObjects) {
+        for (String key : hashMapOfBitsetObjects.keySet()) {
+            System.out.println(key+" - "+hashMapOfBitsetObjects.get(key).get(0) + " " + hashMapOfBitsetObjects.get(key).get(1) + " "
+                   + hashMapOfBitsetObjects.get(key).get(2) + " "+ " " + hashMapOfBitsetObjects.get(key).get(3)+ " " + hashMapOfBitsetObjects.get(key).get(4));
+        }
+    }
+
+    private static void printCompressedBitMap(ArrayList<BitSet> bitset) {
+        for (BitSet bitset1: bitset) {
+            System.out.println(bitset1.get(0)+" "+bitset1.get(1)+" "+bitset1.get(2)+" "+bitset1.get(3)+" "+bitset1.get(4)+" "+bitset1.get(5)
+            +" "+bitset1.get(6));
         }
     }
 
