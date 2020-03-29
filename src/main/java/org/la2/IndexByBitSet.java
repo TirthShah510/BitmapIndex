@@ -3,7 +3,9 @@ package org.la2;
 import java.io.*;
 
 public class IndexByBitSet {
-    public static void main(String args[]) throws IOException, NoSuchFieldException, IllegalAccessException {
+    private static final long BUFFER_SPACE_IN_BYTES = 2 * 1000; // 2kb
+
+    public static void main(String args[]) throws IOException {
         System.gc();
         Runtime runtime = Runtime.getRuntime();
         long usedMemory = runtime.totalMemory() - runtime.freeMemory();
@@ -15,8 +17,7 @@ public class IndexByBitSet {
     }
 
     public static int numberOfTuplesPossibleToProcessAtOnce(long sizeOfEachTupleInBytes, long processingMemoryBytesRequiredForEachTuple) {
-        long bufferBytes = 1000;
-        long freeMemoryBytes = Runtime.getRuntime().freeMemory() - bufferBytes;
+        long freeMemoryBytes = Runtime.getRuntime().freeMemory() - BUFFER_SPACE_IN_BYTES;
         return (int) (freeMemoryBytes / sizeOfEachTupleInBytes / processingMemoryBytesRequiredForEachTuple);
     }
 }
