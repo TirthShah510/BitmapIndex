@@ -4,16 +4,16 @@ import java.io.*;
 import java.util.*;
 
 public class GenderBitmapCreation {
-    public static void createUncompressedIndex() throws IOException {
+    public static String createUncompressedIndex(String compressedDatasetFileName) throws IOException {
         long startTime = System.currentTimeMillis();
 
         String tempFile = "temp_gender_index.txt";
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, Configuration.INPUT_FILE_NAME)));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, compressedDatasetFileName)));
         FileWriter fw = new FileWriter(Configuration.FILE_PATH + tempFile);
 
         boolean readingCompleted = false;
 
-        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(101, 100);
+        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(DatasetCompressor.getCompressedTupleSize(), DatasetCompressor.getCompressedTupleSize() * 2);
         System.out.println("\nCan process " + chunkSize + " records at a time");
 
         short reads = 0;
@@ -33,7 +33,7 @@ public class GenderBitmapCreation {
                     readingCompleted = true;
                     break;
                 }
-                gender.addLast(line.charAt(43) == '0');
+                gender.addLast(DatasetCompressor.getGenderFromCompressedRecord(line) == '0');
             }
 
             // +1 writing
@@ -55,7 +55,8 @@ public class GenderBitmapCreation {
 
         chunks = 0;
         FileReader fr = new FileReader(new File(Configuration.FILE_PATH, tempFile));
-        fw = new FileWriter(Configuration.FILE_PATH + "gender_index.txt");
+        String genderIndexFileName = "gender_index.txt";
+        fw = new FileWriter(Configuration.FILE_PATH + genderIndexFileName);
 
         LinkedList<Byte> genderIndex = new LinkedList<>();
         int i = 0;
@@ -137,5 +138,7 @@ public class GenderBitmapCreation {
 
         new File(Configuration.FILE_PATH, tempFile).delete();
         System.gc();
+
+        return genderIndexFileName;
     }
 }
