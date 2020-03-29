@@ -62,7 +62,7 @@ public class GenderBitmapCreation {
         int i = 0;
 
         System.out.println("\nProcessing \"" + tempFile + "\" file");
-        chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(2, 20);
+        chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(1, 1 * 30);
         System.out.println("\tRound 1: Can process " + chunkSize + " temp-indexes at a time");
 
         readingCompleted = false;
@@ -97,7 +97,7 @@ public class GenderBitmapCreation {
         System.gc();
 
         chunks = 0;
-        chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(2, 20);
+        chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(1, 1 * 30);
         System.out.println("\tRound 2: Can process " + chunkSize + " temp-indexes at a time");
 
         readingCompleted = false;
