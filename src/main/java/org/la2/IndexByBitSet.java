@@ -12,10 +12,11 @@ public class IndexByBitSet {
         System.out.println("Total Memory: " + runtime.totalMemory());
         System.out.println("Max Memory: " + Runtime.getRuntime().maxMemory());
         System.out.println("Used Memory: " + usedMemory);
-        System.out.println("\n=====================================================================================\n");
         //BitmapCreation.callCreateBitmapIndexMethod();
         String compressedDatasetFileName = DatasetCompressor.createCompressedDataset();
         GenderBitmapCreation.createUncompressedIndex(compressedDatasetFileName);
+        //  TODO: create other indexes and remove duplicates
+        new File(Configuration.FILE_PATH + compressedDatasetFileName).delete();
     }
 
     public static int numberOfTuplesPossibleToProcessAtOnce(long sizeOfEachTupleInBytes, long processingMemoryBytesRequiredForEachTuple) {

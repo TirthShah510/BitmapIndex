@@ -7,16 +7,17 @@ public class DatasetCompressor {
     public static String createCompressedDataset() throws IOException {
         long startTime = System.currentTimeMillis();
 
-        System.out.println("Creating Compressed Dataset");
+        System.out.println("\n=========================================== Creating Compressed Dataset ==========================================\n");
 
         String compressedDatasetFileName = "compressed_" + Configuration.INPUT_FILE_NAME;
         BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, Configuration.INPUT_FILE_NAME)));
         FileWriter fw = new FileWriter(Configuration.FILE_PATH + compressedDatasetFileName);
+        FileWriter tempGenderIndexFile = new FileWriter(Configuration.FILE_PATH + getTempGenderIndexFile());
 
         boolean readingCompleted = false;
 
         short tupleSizeInBytes = 101;
-        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(tupleSizeInBytes, tupleSizeInBytes * 2);
+        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(tupleSizeInBytes, tupleSizeInBytes);
         System.out.println("\nCan process " + chunkSize + " records at a time");
 
         short reads = 0;
@@ -42,21 +43,24 @@ public class DatasetCompressor {
                 compressedRecords.add(compressedRecord);
             }
 
-            // +1 writing
-            writes++;
+            // +2 writing
             while (!compressedRecords.isEmpty()) {
-                fw.write(compressedRecords.removeFirst() + "\n");
+                String compressedRecord = compressedRecords.removeFirst();
+                fw.write(compressedRecord + "\n");
+                tempGenderIndexFile.write(getGenderFromCompressedRecord(compressedRecord) == '0' ? "1" : "0");
             }
+            writes += 2;
         }
         bufferedReader.close();
         bufferedReader = null;
+        tempGenderIndexFile.flush();
+        tempGenderIndexFile.close();
         fw.flush();
         fw.close();
 
         System.out.println("\nOverall Stats:");
         System.out.println("\tTime Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
         System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);
-        System.out.println("\n=====================================================================================\n");
 
         System.gc();
 
@@ -81,5 +85,9 @@ public class DatasetCompressor {
 
     public static String getDepartmentNumberFromCompressedRecord(String compressedRecord) {
         return compressedRecord.substring(19, 22);
+    }
+
+    public static String getTempGenderIndexFile() {
+        return "temp_gender_index.txt";
     }
 }

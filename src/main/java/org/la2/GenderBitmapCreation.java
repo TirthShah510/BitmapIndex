@@ -5,67 +5,25 @@ import java.util.*;
 
 public class GenderBitmapCreation {
     public static String createUncompressedIndex(String compressedDatasetFileName) throws IOException {
+        System.out.println("\n=========================================== Creating Gender Index ==========================================\n");
+
         long startTime = System.currentTimeMillis();
-
-        String tempFile = "temp_gender_index.txt";
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, compressedDatasetFileName)));
-        FileWriter fw = new FileWriter(Configuration.FILE_PATH + tempFile);
-
-        boolean readingCompleted = false;
-
-        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(DatasetCompressor.getCompressedTupleSize(), DatasetCompressor.getCompressedTupleSize() * 2);
-        System.out.println("\nCan process " + chunkSize + " records at a time");
 
         short reads = 0;
         short writes = 0;
-
         short chunks = 0;
-
-        while (!readingCompleted) {
-            LinkedList<Boolean> gender = new LinkedList<>();
-            int i = 0;
-
-            // +1 reading
-            reads++;
-            for (; i < chunkSize; i++) {
-                String line = bufferedReader.readLine();
-                if (line == null) {
-                    readingCompleted = true;
-                    break;
-                }
-                gender.addLast(DatasetCompressor.getGenderFromCompressedRecord(line) == '0');
-            }
-
-            // +1 writing
-            writes++;
-            while (!gender.isEmpty()) {
-                fw.write(gender.removeFirst() ? "1" : "0");
-            }
-
-            chunks++;
-        }
-        bufferedReader.close();
-        bufferedReader = null;
-        fw.flush();
-        fw.close();
-
-        System.out.println("\ncreated \"" + tempFile + "\" in " + chunks + " chunks");
-        System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);
-        System.gc();
-
-        chunks = 0;
-        FileReader fr = new FileReader(new File(Configuration.FILE_PATH, tempFile));
         String genderIndexFileName = "gender_index.txt";
-        fw = new FileWriter(Configuration.FILE_PATH + genderIndexFileName);
+        FileReader fr = new FileReader(new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()));
+        FileWriter fw = new FileWriter(Configuration.FILE_PATH + genderIndexFileName);
 
         LinkedList<Byte> genderIndex = new LinkedList<>();
         int i = 0;
 
-        System.out.println("\nProcessing \"" + tempFile + "\" file");
-        chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(1, 1 * 30);
+        System.out.println("Processing \"" + DatasetCompressor.getTempGenderIndexFile() + "\" file");
+        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(1, 1 * 30);
         System.out.println("\tRound 1: Can process " + chunkSize + " temp-indexes at a time");
 
-        readingCompleted = false;
+        boolean readingCompleted = false;
         while (!readingCompleted) {
             i = 0;
 
@@ -90,7 +48,7 @@ public class GenderBitmapCreation {
         }
 
         fr.close();
-        fr = new FileReader(new File(Configuration.FILE_PATH, tempFile));
+        fr = new FileReader(new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()));
         fw.write("\n");
 
         System.out.println("\tRound 1: Completed in " + chunks + " chunks");
@@ -136,7 +94,7 @@ public class GenderBitmapCreation {
         System.out.println("\tTime Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
         System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);
 
-        new File(Configuration.FILE_PATH, tempFile).delete();
+        new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()).delete();
         System.gc();
 
         return genderIndexFileName;
