@@ -7,8 +7,8 @@ import java.util.BitSet;
 import java.util.LinkedList;
 
 public class EmployeeIdBitmapCreation {
-    public static String createUncompressedIndex(String compressedDatasetFileName) throws IOException {
-        System.out.println("\n=========================================== Creating EmployeeId Index ==========================================\n");
+    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName) throws IOException {
+    	System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index ====================\n");
 
         long startTime = System.currentTimeMillis();
 
@@ -81,16 +81,17 @@ public class EmployeeIdBitmapCreation {
                     bitSet.set(position - 1);
                 } else {
                     if (!previousEmployeeId.equals("")) {
-                        // +1 write
-                        writes++;
+                    	// +2 write to write uncompressed and compressed bitmap
+                        writes+=2;
 
                         outputFileWriter.write(previousEmployeeId + " > ");
                         //fileWriter.write(previousEmployeeId + " > ");
-                        for (int i = 0; i < bitSet.size(); i++) {
+                        for (int i = 0; i < bitSet.length(); i++) {
                             outputFileWriter.write(bitSet.get(i) ? "1" : "0");
                             //fileWriter.write("," + i);
                         }
                         outputFileWriter.write("\n");
+                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME);
                         //fileWriter.write("\n");
                     }
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
@@ -104,16 +105,17 @@ public class EmployeeIdBitmapCreation {
 
         // writing last employeeId record
         if (bitSet != null) {
-            // +1 write
-            writes++;
+        	// +2 write to write uncompressed and compressed bitmap
+            writes+=2;
 
             outputFileWriter.write(previousEmployeeId + " > ");
             //fileWriter.write(previousEmployeeId + " > ");
-            for (int i = 0; i < bitSet.size(); i++) {
+            for (int i = 0; i < bitSet.length(); i++) {
                 outputFileWriter.write(bitSet.get(i) ? "1" : "0");
                 //fileWriter.write("," + i);
             }
             outputFileWriter.write("\n");
+            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME);
             //fileWriter.write("\n");
         }
 

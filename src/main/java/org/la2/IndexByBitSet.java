@@ -18,13 +18,13 @@ public class IndexByBitSet {
         String compressedDatasetFileName = DatasetCompressor.createCompressedDataset();
 
         // Step-2: create gender index
-        GenderBitmapCreation.createUncompressedIndex(compressedDatasetFileName);
+        GenderBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName);
 
         // Step-3: generate employeeId index
-        EmployeeIdBitmapCreation.createUncompressedIndex(compressedDatasetFileName);
+        EmployeeIdBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName);
 
         // Step-4: sort compressed-dataset on department --> generate department index
-        DepartmentBitmapCreation.createUncompressedIndex(compressedDatasetFileName);
+        DepartmentBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName);
 
         // Step-5: remove duplicates using indexes
         //  TODO: implement Step-5
@@ -36,4 +36,6 @@ public class IndexByBitSet {
         long freeMemoryBytes = Runtime.getRuntime().freeMemory() - BUFFER_SPACE_IN_BYTES;
         return (int) ((freeMemoryBytes - sizeOfEachTupleInBytes) / processingMemoryBytesRequiredForEachTuple);
     }
+    
+    
 }
