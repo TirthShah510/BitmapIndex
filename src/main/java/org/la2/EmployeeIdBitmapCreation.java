@@ -46,6 +46,10 @@ public class EmployeeIdBitmapCreation {
         outputFile.createNewFile();
         FileWriter outputFileWriter = new FileWriter(outputFile);
 
+        File positionOfTupleFile = new File(Configuration.FILE_PATH + File.separator + Configuration.POSITION_FILE_FOR_TUPLE);
+        outputFile.createNewFile();
+        FileWriter fileWriter = new FileWriter(positionOfTupleFile);
+
         System.out.println("generating \"" + outputFile.getName() + "\"");
 
         int bitsetStorageRequiredForEachRecord = DatasetCompressor.getNumOfLines() / 8;
@@ -96,7 +100,8 @@ public class EmployeeIdBitmapCreation {
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
                     int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
                     bitSet.set(position - 1);
-                    //fileWriter.write(employeeId + " > " + position);
+                    fileWriter.write(employeeId + " > " + position);
+                    fileWriter.write("\n");
                     previousEmployeeId = employeeId;
                 }
             }
@@ -119,8 +124,8 @@ public class EmployeeIdBitmapCreation {
 
         outputFileWriter.flush();
         outputFileWriter.close();
-        //fileWriter.flush();
-        //fileWriter.close();
+        fileWriter.flush();
+        fileWriter.close();
         bufferedReader.close();
 
         System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);

@@ -16,4 +16,7 @@ public interface Configuration {
     String DEPARTMENT_DIRECTORY = FILE_PATH + File.separator + "Department/";
     String DEPARTMENT_CHUNKS = DEPARTMENT_DIRECTORY + File.separator + "Chunks/";
     String DEPARTMENT = "department";
+
+    String POSITION_FILE_FOR_TUPLE = "positionForLatestRecord.txt";
+    String OUTPUT_FILE_NAME = "output.txt";
 }
