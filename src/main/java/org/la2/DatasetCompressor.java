@@ -16,7 +16,7 @@ public class DatasetCompressor {
 
         System.out.println("\n=========================================== Creating Compressed Dataset ==========================================\n");
 
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, Configuration.INPUT_FILE_NAME)));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, Configuration.INPUT_FILE_NAME + Configuration.FILE_EXTENSION)));
         FileWriter fw = new FileWriter(Configuration.FILE_PATH + Configuration.COMPRESSED_DATASET_FILE_NAME);
         FileWriter tempGenderIndexFile = new FileWriter(Configuration.FILE_PATH + getTempGenderIndexFile());
         boolean readingCompleted = false;

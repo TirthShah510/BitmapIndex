@@ -1,5 +1,6 @@
 package org.la2;
 
+import sun.security.krb5.Config;
 import tpmms.TwoPhaseMultiwayMergeSort;
 
 import java.io.*;
@@ -28,6 +29,7 @@ public class IndexByBitSet {
 
         // Step-5: remove duplicates using indexes
         //  TODO: implement Step-5
+        GenerateSortedOutputFile.generateOutputFile(Configuration.POSITION_FILE_FOR_TUPLE, Configuration.SORTED_OUTPUT_FILE_NAME);
 
         new File(Configuration.FILE_PATH + compressedDatasetFileName).delete(); // delete compressed dataset file
     }

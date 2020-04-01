@@ -55,7 +55,7 @@ public class GenderBitmapCreation {
         }
         // +1 write to write compressed bitmap
         writes++;
-        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("0", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME);
+        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("0", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
         fr.close();
         fr = new FileReader(new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()));
         fw.write("\n");
@@ -101,7 +101,7 @@ public class GenderBitmapCreation {
         }
         // +1 write to write compressed bitmap
         writes++;
-        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("1", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME);
+        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("1", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
         fr.close();
         fw.flush();
         fw.close();
