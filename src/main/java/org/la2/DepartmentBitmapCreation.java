@@ -7,20 +7,20 @@ import java.util.BitSet;
 import java.util.LinkedList;
 
 public class DepartmentBitmapCreation {
-    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName) throws IOException {
-    	System.out.println("\n====================== Creating Department BitMap Index & Compressed Index ====================\n");
+    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName, String departmentIndexFileName, int fileNumber) throws IOException {
+    	System.out.println("\n====================== Creating Department BitMap Index & Compressed Index For File Number: "+ fileNumber +" ====================\n");
 
         long startTime = System.currentTimeMillis();
 
 
         // sort compressed dataset by department
         TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(DatasetCompressor.getDepartmentComparator(), Configuration.DEPARTMENT);
-        String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName);
+        String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName, fileNumber);
         twoPhaseMultiwayMergeSort = null;
 
         System.gc();
 
-        String departmentIndexFile = createIndexFile(sortedFilePath);
+        String departmentIndexFile = createIndexFile(sortedFilePath, departmentIndexFileName, fileNumber);
 
         System.out.println("\tTime Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
 
@@ -29,14 +29,14 @@ public class DepartmentBitmapCreation {
         return departmentIndexFile;    // TODO: return index file path
     }
 
-    private static String createIndexFile(String sortedFilePath) throws IOException {
+    private static String createIndexFile(String sortedFilePath, String departmentIndexFileName, int fileNumber) throws IOException {
         int reads = 0;
         int writes = 0;
 
         File sortedFile = new File(sortedFilePath);
         BufferedReader bufferedReader = new BufferedReader(new FileReader(sortedFile));
 
-        File outputFile = new File(Configuration.FILE_PATH + File.separator + "department_index.txt");
+        File outputFile = new File(Configuration.FILE_PATH + File.separator + departmentIndexFileName+ fileNumber + Configuration.FILE_EXTENSION);
         outputFile.createNewFile();
         FileWriter outputFileWriter = new FileWriter(outputFile);
 
@@ -81,7 +81,7 @@ public class DepartmentBitmapCreation {
                             outputFileWriter.write(bitSet.get(i) ? "1" : "0");
                         }
                         outputFileWriter.write("\n");
-                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
+                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
                     }
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
                     int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
@@ -101,7 +101,7 @@ public class DepartmentBitmapCreation {
                 outputFileWriter.write(bitSet.get(i) ? "1" : "0");
             }
             outputFileWriter.write("\n");
-            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
+            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME +fileNumber + Configuration.FILE_EXTENSION);
         }
 
         outputFileWriter.flush();
@@ -112,5 +112,4 @@ public class DepartmentBitmapCreation {
 
         return outputFile.getAbsolutePath();
     }
-
 }

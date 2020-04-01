@@ -16,9 +16,9 @@ public class TwoPhaseMultiwayMergeSort {
         this.attributeToSortOn = attribute;
     }
 
-    public String start(String compressedDatasetFile) throws IOException {
+    public String start(String compressedDatasetFile, int fileNumber) throws IOException {
         File mergedFile = new File(compressedDatasetFile);
-        String sortedFilePath = readFileAndDivideIntoBlocks(mergedFile);
+        String sortedFilePath = readFileAndDivideIntoBlocks(mergedFile, fileNumber);
         return sortedFilePath;
     }
 
@@ -26,7 +26,7 @@ public class TwoPhaseMultiwayMergeSort {
         return comparator;
     }
 
-    private String readFileAndDivideIntoBlocks(File file) throws IOException {
+    private String readFileAndDivideIntoBlocks(File file, int fileNumber) throws IOException {
         System.out.println("Creating Blocks");
         BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
         LinkedList<String> blockFiles = new LinkedList<>();
@@ -46,7 +46,7 @@ public class TwoPhaseMultiwayMergeSort {
             }
             if (!blockData.isEmpty()) {
                 blockData.sort(getComparator());
-                String savedBlockFilePath = saveBlockFile(blockData, chunkCount);
+                String savedBlockFilePath = saveBlockFile(blockData, chunkCount, fileNumber);
                 blockFiles.add(savedBlockFilePath);
                 chunkCount++;
             }
@@ -55,12 +55,12 @@ public class TwoPhaseMultiwayMergeSort {
 
         System.out.println("Total Number Of Blocks: " + chunkCount);
 
-        return createBufferReaderObjectsOfBlocks(blockFiles);
+        return createBufferReaderObjectsOfBlocks(blockFiles, fileNumber);
     }
 
-    private String saveBlockFile(LinkedList<String> blockData, int index) throws IOException {
-        File dir = new File(Configuration.FILE_PATH + File.separator + attributeToSortOn);
-        File BLOCK_FILE_PATH = new File(Configuration.FILE_PATH + File.separator + attributeToSortOn + File.separator + "chunks");
+    private String saveBlockFile(LinkedList<String> blockData, int index, int fileNumber) throws IOException {
+        File dir = new File(Configuration.FILE_PATH + File.separator + attributeToSortOn + fileNumber);
+        File BLOCK_FILE_PATH = new File(Configuration.FILE_PATH + File.separator + attributeToSortOn + fileNumber + File.separator + "chunks");
 
         if (!dir.exists()) {
             dir.mkdirs();
@@ -83,14 +83,14 @@ public class TwoPhaseMultiwayMergeSort {
         return blockFileAbsolutePath;
     }
 
-    private String createBufferReaderObjectsOfBlocks(LinkedList<String> blockFilesPath) throws IOException {
-        String outputFilePath = merge(blockFilesPath);
+    private String createBufferReaderObjectsOfBlocks(LinkedList<String> blockFilesPath, int fileNumber) throws IOException {
+        String outputFilePath = merge(blockFilesPath, fileNumber);
         return outputFilePath;
     }
 
-    private String merge(LinkedList<String> blockFilesPath) throws IOException {
+    private String merge(LinkedList<String> blockFilesPath, int fileNumber) throws IOException {
         System.out.println("Merging the Blocks");
-        String outputFilePathAndName = Configuration.FILE_PATH + File.separator + attributeToSortOn + File.separator + "sorted_" + attributeToSortOn + ".txt";
+        String outputFilePathAndName = Configuration.FILE_PATH + File.separator + attributeToSortOn +fileNumber+ File.separator + "sorted_" + attributeToSortOn + ".txt";
         File outputFile = new File(outputFilePathAndName);
 
         LinkedList<FileReaderHandler> fileFileReaderHandlers = new LinkedList<>();

@@ -7,20 +7,20 @@ import java.util.BitSet;
 import java.util.LinkedList;
 
 public class EmployeeIdBitmapCreation {
-    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName) throws IOException {
-    	System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index ====================\n");
+    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName, String employeeIdIndexFileName, int fileNumber) throws IOException {
+    	System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index For File Number: "+ fileNumber +"====================\n");
 
         long startTime = System.currentTimeMillis();
 
-
+        
         // sort compressed dataset by employeeId
         TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(DatasetCompressor.getEmployeeIdComparator(), Configuration.EMPLOYEE_ID);
-        String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName);
+        String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName, fileNumber);
         twoPhaseMultiwayMergeSort = null;
 
         System.gc();
 
-        String employeeIdIndexFile = createIndexFile(sortedFilePath);
+        String employeeIdIndexFile = createIndexFile(sortedFilePath, employeeIdIndexFileName, fileNumber);
 
 //      duplicateTupleRemoval(Configuration.FILE_PATH + File.separator + "employeeId_index.txt");
 
@@ -31,7 +31,7 @@ public class EmployeeIdBitmapCreation {
         return employeeIdIndexFile;
     }
 
-    private static String createIndexFile(String sortedFilePath) throws IOException {
+    private static String createIndexFile(String sortedFilePath, String employeeIdIndexFileName, int fileNumber) throws IOException {
         int reads = 0;
         int writes = 0;
 
@@ -42,11 +42,11 @@ public class EmployeeIdBitmapCreation {
         tempOutputFile.createNewFile();
         FileWriter fileWriter = new FileWriter(tempOutputFile);*/
 
-        File outputFile = new File(Configuration.FILE_PATH + File.separator + "employeeId_index.txt");
+        File outputFile = new File(Configuration.FILE_PATH + File.separator + employeeIdIndexFileName + fileNumber + Configuration.FILE_EXTENSION);
         outputFile.createNewFile();
         FileWriter outputFileWriter = new FileWriter(outputFile);
 
-        File positionOfTupleFile = new File(Configuration.FILE_PATH + File.separator + Configuration.POSITION_FILE_FOR_TUPLE);
+        File positionOfTupleFile = new File(Configuration.FILE_PATH + File.separator + Configuration.POSITION_FILE_FOR_TUPLE + fileNumber + Configuration.FILE_EXTENSION);
         positionOfTupleFile.createNewFile();
         FileWriter fileWriter = new FileWriter(positionOfTupleFile);
 
@@ -95,7 +95,7 @@ public class EmployeeIdBitmapCreation {
                             //fileWriter.write("," + i);
                         }
                         outputFileWriter.write("\n");
-                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
+                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
                         //fileWriter.write("\n");
                     }
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
@@ -120,7 +120,7 @@ public class EmployeeIdBitmapCreation {
                 //fileWriter.write("," + i);
             }
             outputFileWriter.write("\n");
-            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
+            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
             //fileWriter.write("\n");
         }
 

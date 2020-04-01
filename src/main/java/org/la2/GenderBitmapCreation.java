@@ -5,16 +5,16 @@ import java.util.*;
 import org.la2.CompressedBitMap;
 
 public class GenderBitmapCreation {
-    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName) throws IOException {
-        System.out.println("\n====================== Creating Gender BitMap Index & Compressed Index ====================\n");
+    public static String createUncompressedAndCompressedIndex(String genderIndexFileName, int fileNumber) throws IOException {
+        System.out.println("\n====================== Creating Gender BitMap Index & Compressed Index For File Number: "+ fileNumber +" ====================\n");
         long startTime = System.currentTimeMillis();
 
         short reads = 0;
         short writes = 0;
         short chunks = 0;
-        String genderIndexFileName = "gender_index.txt";
+        
         FileReader fr = new FileReader(new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()));
-        FileWriter fw = new FileWriter(Configuration.FILE_PATH + genderIndexFileName);
+        FileWriter fw = new FileWriter(Configuration.FILE_PATH + genderIndexFileName+fileNumber+Configuration.FILE_EXTENSION);
 
         LinkedList<Byte> genderIndex = new LinkedList<>();
         int i = 0;
@@ -55,7 +55,7 @@ public class GenderBitmapCreation {
         }
         // +1 write to write compressed bitmap
         writes++;
-        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("0", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
+        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("0", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
         fr.close();
         fr = new FileReader(new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()));
         fw.write("\n");
@@ -101,7 +101,7 @@ public class GenderBitmapCreation {
         }
         // +1 write to write compressed bitmap
         writes++;
-        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("1", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
+        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("1", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
         fr.close();
         fw.flush();
         fw.close();
@@ -119,6 +119,6 @@ public class GenderBitmapCreation {
         new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()).delete();
         System.gc();
 
-        return genderIndexFileName;
+        return genderIndexFileName + fileNumber + Configuration.FILE_EXTENSION;
     }
 }

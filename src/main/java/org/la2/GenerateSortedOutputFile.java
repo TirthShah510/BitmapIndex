@@ -8,9 +8,11 @@ import java.util.stream.Stream;
 public class GenerateSortedOutputFile {
 
     public static void generateOutputFile(String positionForTupleFile, String sortedOutputFileName) throws IOException {
-        
-        File inputFile = new File(Configuration.FILE_PATH + File.separator + positionForTupleFile + Configuration.FILE_EXTENSION);
-        File outputFile = new File(Configuration.FILE_PATH + File.separator + sortedOutputFileName + Configuration.FILE_EXTENSION );
+    	
+    	System.out.println("\n====================== Removing Duplicate Tuples ====================\n");
+    	long startTime = System.currentTimeMillis();
+        File inputFile = new File(Configuration.FILE_PATH + File.separator + positionForTupleFile);
+        File outputFile = new File(Configuration.FILE_PATH + File.separator + sortedOutputFileName);
 
         BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFile));
@@ -18,7 +20,6 @@ public class GenerateSortedOutputFile {
         String line;
         while((line = bufferedReader.readLine()) != null){
             int lineNumber = Integer.parseInt(line.substring(11).trim());
-            System.out.println(lineNumber);
             String lineFromDataset;
             try (Stream<String> lines = Files.lines(Paths.get(Configuration.FILE_PATH + File.separator + Configuration.INPUT_FILE_NAME + Configuration.FILE_EXTENSION))) {
                 lineFromDataset = lines.skip(lineNumber-1).findFirst().get();
@@ -28,5 +29,6 @@ public class GenerateSortedOutputFile {
         }
         bufferedWriter.close();
         bufferedReader.close();
+        System.out.println("\n Time To Remove Duplicates: "+ (System.currentTimeMillis() - startTime) + " Ms.");
     }
 }

@@ -1,8 +1,5 @@
 package org.la2;
 
-import sun.security.krb5.Config;
-import tpmms.TwoPhaseMultiwayMergeSort;
-
 import java.io.*;
 
 public class IndexByBitSet {
@@ -14,30 +11,31 @@ public class IndexByBitSet {
         System.out.println("Total Memory: " + runtime.totalMemory());
         System.out.println("Max Memory: " + Runtime.getRuntime().maxMemory());
         System.out.println("Used Memory: " + usedMemory);
-
-        // Step-1: create compressed dataset
-        String compressedDatasetFileName = DatasetCompressor.createCompressedDataset();
-
-        // Step-2: create gender index
-        GenderBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName);
-
-        // Step-3: generate employeeId index
-        EmployeeIdBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName);
-
-        // Step-4: sort compressed-dataset on department --> generate department index
-        DepartmentBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName);
-
-        // Step-5: remove duplicates using indexes
-        //  TODO: implement Step-5
-        GenerateSortedOutputFile.generateOutputFile(Configuration.POSITION_FILE_FOR_TUPLE, Configuration.SORTED_OUTPUT_FILE_NAME);
-
-        new File(Configuration.FILE_PATH + compressedDatasetFileName).delete(); // delete compressed dataset file
+        long startTime = System.currentTimeMillis();
+        for(int fileNumber=1;fileNumber <= 2; fileNumber++ ) {
+        	// Step-1: create compressed dataset
+	        String compressedDatasetFileName = DatasetCompressor.createCompressedDataset(Configuration.INPUT_FILE_NAME, fileNumber);
+	
+	        // Step-2: create gender index
+	        GenderBitmapCreation.createUncompressedAndCompressedIndex(Configuration.GENDER_BITMAP_FILE_NAME, fileNumber);
+	
+	        // Step-3: generate employeeId index
+	        EmployeeIdBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName, Configuration.EMPID_BITMAP_FILE_NAME, fileNumber);
+	
+	        // Step-4: sort compressed-dataset on department --> generate department index
+	        DepartmentBitmapCreation.createUncompressedAndCompressedIndex(compressedDatasetFileName, Configuration.DEPT_BITMAP_FILE_NAME, fileNumber);
+	
+	        // Step-5: remove duplicates using indexes
+	        //  TODO: implement Step-5
+	        GenerateSortedOutputFile.generateOutputFile(Configuration.POSITION_FILE_FOR_TUPLE+fileNumber+Configuration.FILE_EXTENSION, Configuration.SORTED_OUTPUT_FILE_NAME+fileNumber+Configuration.FILE_EXTENSION);
+	
+	        new File(Configuration.FILE_PATH + compressedDatasetFileName).delete(); // delete compressed dataset file
+        }
+        System.out.println("\n Time To Complete Entire Process: "+ (System.currentTimeMillis() - startTime) + " Ms.");
     }
 
     public static int numberOfTuplesPossibleToProcessAtOnce(long sizeOfEachTupleInBytes, long processingMemoryBytesRequiredForEachTuple) {
         long freeMemoryBytes = Runtime.getRuntime().freeMemory() - BUFFER_SPACE_IN_BYTES;
         return (int) ((freeMemoryBytes - sizeOfEachTupleInBytes) / processingMemoryBytesRequiredForEachTuple);
     }
-    
-    
 }

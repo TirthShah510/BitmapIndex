@@ -11,13 +11,13 @@ import java.util.LinkedList;
 public class DatasetCompressor {
     private static int numOfLines;
 
-    public static String createCompressedDataset() throws IOException {
+    public static String createCompressedDataset(String inputFileName, int fileNumber) throws IOException {
         long startTime = System.currentTimeMillis();
 
-        System.out.println("\n=========================================== Creating Compressed Dataset ==========================================\n");
+        System.out.println("\n============================= Creating Compressed Dataset For File Number: "+ fileNumber +" =============================\n");
 
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, Configuration.INPUT_FILE_NAME + Configuration.FILE_EXTENSION)));
-        FileWriter fw = new FileWriter(Configuration.FILE_PATH + Configuration.COMPRESSED_DATASET_FILE_NAME);
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(Configuration.FILE_PATH, inputFileName+fileNumber+Configuration.FILE_EXTENSION)));
+        FileWriter fw = new FileWriter(Configuration.FILE_PATH + Configuration.COMPRESSED_DATASET_FILE_NAME +inputFileName +fileNumber+ Configuration.FILE_EXTENSION);
         FileWriter tempGenderIndexFile = new FileWriter(Configuration.FILE_PATH + getTempGenderIndexFile());
         boolean readingCompleted = false;
 
@@ -72,7 +72,7 @@ public class DatasetCompressor {
 
         System.gc();
 
-        return Configuration.COMPRESSED_DATASET_FILE_NAME;
+        return Configuration.COMPRESSED_DATASET_FILE_NAME +inputFileName+ fileNumber + Configuration.FILE_EXTENSION;
     }
 
     public static int getNumOfLines() {
