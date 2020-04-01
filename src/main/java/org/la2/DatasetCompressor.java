@@ -80,7 +80,7 @@ public class DatasetCompressor {
     }
 
     public static int getCompressedTupleSize() {
-        return 31;
+        return 26;
     }
 
     public static String getEmployeeIdFromCompressedRecord(String compressedRecord) {

@@ -2,16 +2,21 @@ package org.la2;
 
 import java.io.*;
 
+import tpmms.DuplicateHandler;
+import tpmms.PhaseOne;
+import tpmms.TwoPhaseMultiwayMergeSort;
+
 public class IndexByBitSet {
     private static final long BUFFER_SPACE_IN_BYTES = 2 * 1000; // 2kb
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String args[]) throws Exception {
         Runtime runtime = Runtime.getRuntime();
         long usedMemory = runtime.totalMemory() - runtime.freeMemory();
         System.out.println("Total Memory: " + runtime.totalMemory());
         System.out.println("Max Memory: " + Runtime.getRuntime().maxMemory());
         System.out.println("Used Memory: " + usedMemory);
         long startTime = System.currentTimeMillis();
+        String [] sortedFileNames = new String[2];
         for(int fileNumber=1;fileNumber <= 2; fileNumber++ ) {
         	// Step-1: create compressed dataset
 	        String compressedDatasetFileName = DatasetCompressor.createCompressedDataset(Configuration.INPUT_FILE_NAME, fileNumber);
@@ -27,10 +32,15 @@ public class IndexByBitSet {
 	
 	        // Step-5: remove duplicates using indexes
 	        //  TODO: implement Step-5
-	        GenerateSortedOutputFile.generateOutputFile(Configuration.POSITION_FILE_FOR_TUPLE+fileNumber+Configuration.FILE_EXTENSION, Configuration.SORTED_OUTPUT_FILE_NAME+fileNumber+Configuration.FILE_EXTENSION);
+	        sortedFileNames[fileNumber-1] = GenerateSortedOutputFile.generateOutputFile(Configuration.POSITION_FILE_FOR_TUPLE, Configuration.SORTED_OUTPUT_FILE_NAME,fileNumber);
 	
 	        new File(Configuration.FILE_PATH + compressedDatasetFileName).delete(); // delete compressed dataset file
         }
+        
+        String mergedFilePath = PhaseOne.mergeInputFiles(sortedFileNames[0], sortedFileNames[1]);
+        TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(DatasetCompressor.getEmployeeIdComparator(), Configuration.OUTPUT_FILE_ID);
+        String sortedFilePath = twoPhaseMultiwayMergeSort.start(mergedFilePath, 0);
+        DuplicateHandler.removeDuplicateAndWriteOutputFile(sortedFilePath);
         System.out.println("\n Time To Complete Entire Process: "+ (System.currentTimeMillis() - startTime) + " Ms.");
     }
 
