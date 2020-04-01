@@ -81,7 +81,7 @@ public class DepartmentBitmapCreation {
                             outputFileWriter.write(bitSet.get(i) ? "1" : "0");
                         }
                         outputFileWriter.write("\n");
-                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME);
+                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
                     }
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
                     int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
@@ -101,7 +101,7 @@ public class DepartmentBitmapCreation {
                 outputFileWriter.write(bitSet.get(i) ? "1" : "0");
             }
             outputFileWriter.write("\n");
-            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME);
+            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
         }
 
         outputFileWriter.flush();

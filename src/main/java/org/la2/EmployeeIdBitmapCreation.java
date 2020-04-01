@@ -47,7 +47,7 @@ public class EmployeeIdBitmapCreation {
         FileWriter outputFileWriter = new FileWriter(outputFile);
 
         File positionOfTupleFile = new File(Configuration.FILE_PATH + File.separator + Configuration.POSITION_FILE_FOR_TUPLE);
-        outputFile.createNewFile();
+        positionOfTupleFile.createNewFile();
         FileWriter fileWriter = new FileWriter(positionOfTupleFile);
 
         System.out.println("generating \"" + outputFile.getName() + "\"");
@@ -95,7 +95,7 @@ public class EmployeeIdBitmapCreation {
                             //fileWriter.write("," + i);
                         }
                         outputFileWriter.write("\n");
-                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME);
+                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
                         //fileWriter.write("\n");
                     }
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
@@ -120,7 +120,7 @@ public class EmployeeIdBitmapCreation {
                 //fileWriter.write("," + i);
             }
             outputFileWriter.write("\n");
-            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME);
+            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + Configuration.FILE_EXTENSION);
             //fileWriter.write("\n");
         }
 
