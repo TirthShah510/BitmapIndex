@@ -2,11 +2,11 @@ package org.la2;
 
 import java.io.*;
 import java.util.*;
+import org.la2.CompressedBitMap;
 
 public class GenderBitmapCreation {
-    public static String createUncompressedIndex(String compressedDatasetFileName) throws IOException {
-        System.out.println("\n=========================================== Creating Gender Index ==========================================\n");
-
+    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName) throws IOException {
+        System.out.println("\n====================== Creating Gender BitMap Index & Compressed Index ====================\n");
         long startTime = System.currentTimeMillis();
 
         short reads = 0;
@@ -24,6 +24,8 @@ public class GenderBitmapCreation {
         System.out.println("\tRound 1: Can process " + chunkSize + " temp-indexes at a time");
 
         boolean readingCompleted = false;
+        BitSet bitset = new BitSet();
+        int bitsetSetIndexCounter = 0;
         while (!readingCompleted) {
             i = 0;
 
@@ -41,12 +43,19 @@ public class GenderBitmapCreation {
             // +1 writing
             writes++;
             while (!genderIndex.isEmpty()) {
-                fw.write(genderIndex.removeFirst());
+            	Byte bitmapValue = genderIndex.removeFirst();
+                fw.write(bitmapValue);
+                if(bitmapValue == (byte) '1') {
+                	bitset.set(bitsetSetIndexCounter);
+                }
+                bitsetSetIndexCounter++;
             }
-
+            
             chunks++;
         }
-
+        // +1 write to write compressed bitmap
+        writes++;
+        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("0", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME);
         fr.close();
         fr = new FileReader(new File(Configuration.FILE_PATH, DatasetCompressor.getTempGenderIndexFile()));
         fw.write("\n");
@@ -58,6 +67,10 @@ public class GenderBitmapCreation {
         chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(1, 1 * 30);
         System.out.println("\tRound 2: Can process " + chunkSize + " temp-indexes at a time");
 
+        bitset.clear();
+        bitset=null;
+        bitset = new BitSet();
+        bitsetSetIndexCounter = 0;
         readingCompleted = false;
         while (!readingCompleted) {
             i = 0;
@@ -76,17 +89,26 @@ public class GenderBitmapCreation {
             // +1 writing
             writes++;
             while (!genderIndex.isEmpty()) {
-                fw.write(genderIndex.removeFirst() == (byte) '1' ? '0' : '1');
+            	Byte bitMapValue = genderIndex.removeFirst();
+                fw.write(bitMapValue == (byte) '1' ? '0' : '1');
+                if(bitMapValue == (byte) '0') {
+                	bitset.set(bitsetSetIndexCounter);
+                }
+                bitsetSetIndexCounter++;
             }
 
             chunks++;
         }
+        // +1 write to write compressed bitmap
+        writes++;
+        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile("1", bitset, Configuration.GENDER_COMPRESSED_BITMAP_FILE_NAME);
         fr.close();
         fw.flush();
         fw.close();
         fr = null;
         fw = null;
         genderIndex = null;
+        bitset = null;
 
         System.out.println("\tRound 2: Completed in " + chunks + " chunks");
 

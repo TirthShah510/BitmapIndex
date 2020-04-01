@@ -7,8 +7,8 @@ import java.util.BitSet;
 import java.util.LinkedList;
 
 public class DepartmentBitmapCreation {
-    public static String createUncompressedIndex(String compressedDatasetFileName) throws IOException {
-        System.out.println("\n=========================================== Creating Department Index ==========================================\n");
+    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName) throws IOException {
+    	System.out.println("\n====================== Creating Department BitMap Index & Compressed Index ====================\n");
 
         long startTime = System.currentTimeMillis();
 
@@ -52,7 +52,7 @@ public class DepartmentBitmapCreation {
 
         String previousDepartment = "";
         BitSet bitSet = null;
-
+        
         while (!readingCompleted) {
             LinkedList<String> records = new LinkedList<>();
 
@@ -66,7 +66,6 @@ public class DepartmentBitmapCreation {
                 }
                 records.addLast(tuple);
             }
-
             while (!records.isEmpty()) {
                 String tuple = records.removeFirst();
                 String department = DatasetCompressor.getDepartmentNumberFromCompressedRecord(tuple);
@@ -75,14 +74,14 @@ public class DepartmentBitmapCreation {
                     bitSet.set(position - 1);
                 } else {
                     if (!previousDepartment.equals("")) {
-                        // +1 write
-                        writes++;
-
+                        // +2 write to write uncompressed and compressed bitmap
+                        writes+=2;
                         outputFileWriter.write(previousDepartment + " > ");
-                        for (int i = 0; i < bitSet.size(); i++) {
+                        for (int i = 0; i < bitSet.length(); i++) {
                             outputFileWriter.write(bitSet.get(i) ? "1" : "0");
                         }
                         outputFileWriter.write("\n");
+                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME);
                     }
                     bitSet = new BitSet(DatasetCompressor.getNumOfLines());
                     int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
@@ -94,14 +93,15 @@ public class DepartmentBitmapCreation {
 
         // writing last department record
         if (bitSet != null) {
-            // +1 write
-            writes++;
+            // +2 write to write uncompressed and compressed bitmap
+            writes+=2;
 
             outputFileWriter.write(previousDepartment + " > ");
-            for (int i = 0; i < bitSet.size(); i++) {
+            for (int i = 0; i < bitSet.length(); i++) {
                 outputFileWriter.write(bitSet.get(i) ? "1" : "0");
             }
             outputFileWriter.write("\n");
+            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousDepartment, bitSet, Configuration.DEPT_COMPRESSED_BITMAP_FILE_NAME);
         }
 
         outputFileWriter.flush();
