@@ -1,4 +1,5 @@
 package tpmms;
+
 import java.io.*;
 
 import org.la2.Configuration;
@@ -7,11 +8,11 @@ public class PhaseOne {
 
     public static String mergeInputFiles(String fileName1, String fileName2) {
         try {
-        	System.out.println("\n===============Merging Input Files=================\n");
-        	long startTime = System.currentTimeMillis();
-        	File input1 = new File(fileName1);
+            System.out.println("\n===============Merging Input Files=================\n");
+            long startTime = System.currentTimeMillis();
+            File input1 = new File(fileName1);
             File input2 = new File(fileName2);
-            File mergedFile = new File(Configuration.FILE_PATH+File.separator+Configuration.MERGED_FILE + Configuration.FILE_EXTENSION);
+            File mergedFile = new File(Configuration.FILE_PATH + File.separator + Configuration.MERGED_FILE + Configuration.FILE_EXTENSION);
             mergedFile.createNewFile();
             BufferedReader bufferedReader = null;
             FileWriter fileWriter = null;
@@ -31,7 +32,7 @@ public class PhaseOne {
             }
             bufferedReader.close();
             bufferedWriter.close();
-            System.out.println("Time to merge Sorted Files: "+ (System.currentTimeMillis() - startTime) + " Ms.");
+            System.out.println("Time to merge Sorted Files: " + (System.currentTimeMillis() - startTime) + " Ms.");
             return mergedFile.getAbsolutePath();
         } catch (Exception e) {
             e.printStackTrace();

@@ -8,11 +8,11 @@ import java.util.LinkedList;
 
 public class EmployeeIdBitmapCreation {
     public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName, String employeeIdIndexFileName, int fileNumber) throws IOException {
-    	System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index For File Number: "+ fileNumber +"====================\n");
+        System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index For File Number: " + fileNumber + "====================\n");
 
         long startTime = System.currentTimeMillis();
 
-        
+
         // sort compressed dataset by employeeId
         TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(DatasetCompressor.getEmployeeIdComparator(), Configuration.EMPLOYEE_ID);
         String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName, fileNumber);
@@ -21,8 +21,6 @@ public class EmployeeIdBitmapCreation {
         System.gc();
 
         String employeeIdIndexFile = createIndexFile(sortedFilePath, employeeIdIndexFileName, fileNumber);
-
-//      duplicateTupleRemoval(Configuration.FILE_PATH + File.separator + "employeeId_index.txt");
 
         System.out.println("\tTime Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
 
@@ -85,8 +83,8 @@ public class EmployeeIdBitmapCreation {
                     bitSet.set(position - 1);
                 } else {
                     if (!previousEmployeeId.equals("")) {
-                    	// +2 write to write uncompressed and compressed bitmap
-                        writes+=2;
+                        // +2 write to write uncompressed and compressed bitmap
+                        writes += 2;
 
                         outputFileWriter.write(previousEmployeeId + " > ");
                         //fileWriter.write(previousEmployeeId + " > ");
@@ -110,8 +108,8 @@ public class EmployeeIdBitmapCreation {
 
         // writing last employeeId record
         if (bitSet != null) {
-        	// +2 write to write uncompressed and compressed bitmap
-            writes+=2;
+            // +2 write to write uncompressed and compressed bitmap
+            writes += 2;
 
             outputFileWriter.write(previousEmployeeId + " > ");
             //fileWriter.write(previousEmployeeId + " > ");
