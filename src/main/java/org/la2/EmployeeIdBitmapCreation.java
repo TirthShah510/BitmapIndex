@@ -7,129 +7,130 @@ import java.util.BitSet;
 import java.util.LinkedList;
 
 public class EmployeeIdBitmapCreation {
-    public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName, String employeeIdIndexFileName, int fileNumber) throws IOException {
-        System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index For File Number: " + fileNumber + "====================\n");
+	public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName,
+			String employeeIdIndexFileName, int fileNumber) throws IOException {
+		System.out.println("\n====================== Creating EmpId BitMap Index & Compressed Index For File Number: "
+				+ fileNumber + "====================\n");
 
-        long startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 
+		// sort compressed dataset by employeeId
+		TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(
+				DatasetCompressor.getEmployeeIdComparator(), Configuration.EMPLOYEE_ID);
+		String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName,
+				fileNumber);
+		twoPhaseMultiwayMergeSort = null;
 
-        // sort compressed dataset by employeeId
-        TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(DatasetCompressor.getEmployeeIdComparator(), Configuration.EMPLOYEE_ID);
-        String sortedFilePath = twoPhaseMultiwayMergeSort.start(Configuration.FILE_PATH + compressedDatasetFileName, fileNumber);
-        twoPhaseMultiwayMergeSort = null;
+		System.gc();
 
-        System.gc();
+		String employeeIdIndexFile = createIndexFile(sortedFilePath, employeeIdIndexFileName, fileNumber);
 
-        String employeeIdIndexFile = createIndexFile(sortedFilePath, employeeIdIndexFileName, fileNumber);
+		System.out.println("Time Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
 
-        System.out.println("\tTime Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
+		System.gc();
 
-        System.gc();
+		return employeeIdIndexFile;
+	}
 
-        return employeeIdIndexFile;
-    }
+	private static String createIndexFile(String sortedFilePath, String employeeIdIndexFileName, int fileNumber)
+			throws IOException {
+		int reads = 0;
+		int writes = 0;
 
-    private static String createIndexFile(String sortedFilePath, String employeeIdIndexFileName, int fileNumber) throws IOException {
-        int reads = 0;
-        int writes = 0;
+		File sortedFile = new File(sortedFilePath);
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(sortedFile));
 
-        File sortedFile = new File(sortedFilePath);
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(sortedFile));
+		File outputFile = new File(Configuration.FILE_PATH + File.separator + employeeIdIndexFileName + fileNumber
+				+ Configuration.FILE_EXTENSION);
+		outputFile.createNewFile();
+		FileWriter outputFileWriter = new FileWriter(outputFile);
 
-        /*File tempOutputFile = new File(sortedFile.getParentFile().getAbsolutePath(), "temp_index_" + sortedFile.getName());
-        tempOutputFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(tempOutputFile);*/
+		File positionOfTupleFile = new File(Configuration.FILE_PATH + File.separator
+				+ Configuration.POSITION_FILE_FOR_TUPLE + fileNumber + Configuration.FILE_EXTENSION);
+		positionOfTupleFile.createNewFile();
+		FileWriter positionFileWriter = new FileWriter(positionOfTupleFile);
 
-        File outputFile = new File(Configuration.FILE_PATH + File.separator + employeeIdIndexFileName + fileNumber + Configuration.FILE_EXTENSION);
-        outputFile.createNewFile();
-        FileWriter outputFileWriter = new FileWriter(outputFile);
+		System.out.println("generating \"" + outputFile.getName() + "\"");
 
-        File positionOfTupleFile = new File(Configuration.FILE_PATH + File.separator + Configuration.POSITION_FILE_FOR_TUPLE + fileNumber + Configuration.FILE_EXTENSION);
-        positionOfTupleFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(positionOfTupleFile);
+		int bitsetStorageRequiredForEachRecord = DatasetCompressor.getNumOfLines() / 8;
+		boolean readingCompleted = false;
+		
+		int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(DatasetCompressor.getCompressedTupleSize(),
+				(DatasetCompressor.getCompressedTupleSize() * 2) + bitsetStorageRequiredForEachRecord);
+		if (chunkSize == 0) {
+			throw new RuntimeException("Memory Full. Cannot read chunks");
+		}
+		System.out.println("Number of records allowed to read:  " + chunkSize);
 
-        System.out.println("generating \"" + outputFile.getName() + "\"");
+		String previousEmployeeId = "";
+		BitSet bitSet = null;
 
-        int bitsetStorageRequiredForEachRecord = DatasetCompressor.getNumOfLines() / 8;
-        boolean readingCompleted = false;
-        int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(DatasetCompressor.getCompressedTupleSize(), (DatasetCompressor.getCompressedTupleSize() * 2) + bitsetStorageRequiredForEachRecord);
-        if (chunkSize == 0) {
-            throw new RuntimeException("Memory Full. Cannot read chunks");
-        }
-        System.out.println("Number of records allowed to read:  " + chunkSize);
+		while (!readingCompleted) {
+			LinkedList<String> records = new LinkedList<>();
 
-        String previousEmployeeId = "";
-        BitSet bitSet = null;
+			// +1 read
+			reads++;
+			for (int i = 0; i < chunkSize; i++) {
+				String tuple = bufferedReader.readLine();
+				if (tuple == null) {
+					readingCompleted = true;
+					break;
+				}
+				records.addLast(tuple);
+			}
 
-        while (!readingCompleted) {
-            LinkedList<String> records = new LinkedList<>();
+			while (!records.isEmpty()) {
+				String tuple = records.removeFirst();
+				String employeeId = DatasetCompressor.getEmployeeIdFromCompressedRecord(tuple);
+				if (employeeId.equals(previousEmployeeId)) {
+					int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
+					bitSet.set(position - 1);
+				} else {
+					if (!previousEmployeeId.equals("")) {
+						// +2 writes to write uncompressed and compressed bitmap
+						writes += 2;
 
-            // +1 read
-            reads++;
-            for (int i = 0; i < chunkSize; i++) {
-                String tuple = bufferedReader.readLine();
-                if (tuple == null) {
-                    readingCompleted = true;
-                    break;
-                }
-                records.addLast(tuple);
-            }
+						outputFileWriter.write(previousEmployeeId + " > ");
+						for (int i = 0; i < bitSet.length(); i++) {
+							outputFileWriter.write(bitSet.get(i) ? "1" : "0");
+						}
+						outputFileWriter.write("\n");
+						CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet,
+								Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + fileNumber
+										+ Configuration.FILE_EXTENSION);
+					}
+					bitSet = new BitSet(DatasetCompressor.getNumOfLines());
+					int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
+					bitSet.set(position - 1);
+					positionFileWriter.write(employeeId + " > " + position);
+					positionFileWriter.write("\n");
+					previousEmployeeId = employeeId;
+				}
+			}
+		}
 
-            while (!records.isEmpty()) {
-                String tuple = records.removeFirst();
-                String employeeId = DatasetCompressor.getEmployeeIdFromCompressedRecord(tuple);
-                if (employeeId.equals(previousEmployeeId)) {
-                    int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
-                    bitSet.set(position - 1);
-                } else {
-                    if (!previousEmployeeId.equals("")) {
-                        // +2 write to write uncompressed and compressed bitmap
-                        writes += 2;
+		// writing last employeeId record
+		if (bitSet != null) {
+			// +2 write to write uncompressed and compressed bitmap
+			writes += 2;
 
-                        outputFileWriter.write(previousEmployeeId + " > ");
-                        //fileWriter.write(previousEmployeeId + " > ");
-                        for (int i = 0; i < bitSet.length(); i++) {
-                            outputFileWriter.write(bitSet.get(i) ? "1" : "0");
-                            //fileWriter.write("," + i);
-                        }
-                        outputFileWriter.write("\n");
-                        CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
-                        //fileWriter.write("\n");
-                    }
-                    bitSet = new BitSet(DatasetCompressor.getNumOfLines());
-                    int position = Integer.parseInt(DatasetCompressor.getTuplePosition(tuple));
-                    bitSet.set(position - 1);
-                    fileWriter.write(employeeId + " > " + position);
-                    fileWriter.write("\n");
-                    previousEmployeeId = employeeId;
-                }
-            }
-        }
+			outputFileWriter.write(previousEmployeeId + " > ");
+			for (int i = 0; i < bitSet.length(); i++) {
+				outputFileWriter.write(bitSet.get(i) ? "1" : "0");
+			}
+			outputFileWriter.write("\n");
+			CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet,
+					Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
+		}
 
-        // writing last employeeId record
-        if (bitSet != null) {
-            // +2 write to write uncompressed and compressed bitmap
-            writes += 2;
+		outputFileWriter.flush();
+		outputFileWriter.close();
+		positionFileWriter.flush();
+		positionFileWriter.close();
+		bufferedReader.close();
 
-            outputFileWriter.write(previousEmployeeId + " > ");
-            //fileWriter.write(previousEmployeeId + " > ");
-            for (int i = 0; i < bitSet.length(); i++) {
-                outputFileWriter.write(bitSet.get(i) ? "1" : "0");
-                //fileWriter.write("," + i);
-            }
-            outputFileWriter.write("\n");
-            CompressedBitMap.readBitSetToCreateCompressedBitSetAndWriteToFile(previousEmployeeId, bitSet, Configuration.EMPID_COMPRESSED_BITMAP_FILE_NAME + fileNumber + Configuration.FILE_EXTENSION);
-            //fileWriter.write("\n");
-        }
-
-        outputFileWriter.flush();
-        outputFileWriter.close();
-        fileWriter.flush();
-        fileWriter.close();
-        bufferedReader.close();
-
-        System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);
-
-        return outputFile.getAbsolutePath();
-    }
+		System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);
+		System.out.println("Total Disk I/O's for Creating EmpId BitMap=" + (reads + writes));
+		return outputFile.getAbsolutePath();
+	}
 }

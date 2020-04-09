@@ -32,10 +32,11 @@ public class DuplicateHandler {
                 }
             }
         }
-        System.out.println("Total Number of Tuples: " + (numberOfTuples + 1));
+        System.out.println("Total Number of Unique Tuples: " + (numberOfTuples + 1));
         System.out.println("Time to remove duplicates from Merged Files: " + (System.currentTimeMillis() - startTime) + " Ms.");
         bufferedReader.close();
         bufferedWriter.close();
         duplicateFile.deleteOnExit();
+        System.gc();
     }
 }

@@ -17,13 +17,13 @@ public class GenerateSortedOutputFile {
 
         System.out.println("\n====================== Removing Duplicate Tuples ====================\n");
         long startTime = System.currentTimeMillis();
-        File inputFile = new File(Configuration.FILE_PATH + File.separator + positionForTupleFile + fileNumber
+        File inputPositionTupleFile = new File(Configuration.FILE_PATH + File.separator + positionForTupleFile + fileNumber
                 + Configuration.FILE_EXTENSION);
-        File outputFile = new File(Configuration.FILE_PATH + File.separator + sortedOutputFileName + fileNumber
+        File sortedOutputFile = new File(Configuration.FILE_PATH + File.separator + sortedOutputFileName + fileNumber
                 + Configuration.FILE_EXTENSION);
 
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile));
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFile));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(inputPositionTupleFile));
+        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(sortedOutputFile));
 
         String line;
         while ((line = bufferedReader.readLine()) != null) {
@@ -38,7 +38,8 @@ public class GenerateSortedOutputFile {
         }
         bufferedWriter.close();
         bufferedReader.close();
-        System.out.println("\n Time To Remove Duplicates: " + (System.currentTimeMillis() - startTime) + " Ms.");
-        return outputFile.getAbsolutePath();
+        System.out.println("Time To Remove Duplicates: " + (System.currentTimeMillis() - startTime) + " Ms.");
+        System.gc();
+        return sortedOutputFile.getAbsolutePath();
     }
 }

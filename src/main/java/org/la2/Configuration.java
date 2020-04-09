@@ -6,7 +6,7 @@ public interface Configuration {
 
     String FILE_PATH = ".." + File.separator + "Dataset/";
     String FILE_EXTENSION = ".txt";
-    String INPUT_FILE_NAME = "dataset";
+    String INPUT_FILE_NAME = "datasetTest";
     String OUTPUT_FILE_NAME = "outputFile";
     String COMPRESSED_DATASET_FILE_NAME = "compressed_";
     String BLOCK_NAME = "Block";

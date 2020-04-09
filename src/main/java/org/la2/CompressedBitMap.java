@@ -39,6 +39,7 @@ public class CompressedBitMap {
         }
         pw.write("\n");
         pw.close();
+        System.gc();
     }
 
     public static String createCompressedBitmap(int zeroCounter) {

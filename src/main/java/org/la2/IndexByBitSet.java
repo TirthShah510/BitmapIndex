@@ -35,20 +35,21 @@ public class IndexByBitSet {
                     Configuration.DEPT_BITMAP_FILE_NAME, fileNumber);
 
             // Step-5: remove duplicates using indexes
-            // TODO: implement Step-5
             sortedFileNames[fileNumber - 1] = GenerateSortedOutputFile.generateOutputFile(
                     Configuration.POSITION_FILE_FOR_TUPLE, Configuration.SORTED_OUTPUT_FILE_NAME, fileNumber);
 
             new File(Configuration.FILE_PATH + compressedDatasetFileName).delete(); // delete compressed dataset file
         }
-
+        
+        long tpmmsStartTime = System.currentTimeMillis();
         String mergedFilePath = PhaseOne.mergeInputFiles(sortedFileNames[0], sortedFileNames[1]);
         TwoPhaseMultiwayMergeSort twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(
                 DatasetCompressor.getEmployeeIdComparator(), Configuration.OUTPUT_FILE_ID);
         String sortedFilePath = twoPhaseMultiwayMergeSort.start(mergedFilePath, 0);
         DuplicateHandler.removeDuplicateAndWriteOutputFile(sortedFilePath);
+        System.out.println("\nTime for TPMMS: "+ (System.currentTimeMillis() - tpmmsStartTime) + " Ms.");
         deleteUnnecessaryFiles(sortedFileNames, mergedFilePath);
-        System.out.println("\n Time To Complete Entire Process: " + (System.currentTimeMillis() - startTime) + " Ms.");
+        System.out.println("\nTime To Complete Entire Process: " + (System.currentTimeMillis() - startTime) + " Ms.");
     }
 
     public static int numberOfTuplesPossibleToProcessAtOnce(long sizeOfEachTupleInBytes,

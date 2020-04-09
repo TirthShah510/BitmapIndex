@@ -18,8 +18,8 @@ public class DatasetCompressor {
     public static String createCompressedDataset(String inputFileName, int fileNumber) throws IOException {
         long startTime = System.currentTimeMillis();
 
-        System.out.println("\n============================= Creating Compressed Dataset For File Number: " + fileNumber
-                + " =============================\n");
+        System.out.println("\n================== Creating Compressed Dataset For File Number: " + fileNumber
+                + " ====================\n");
 
         BufferedReader bufferedReader = new BufferedReader(new FileReader(
                 new File(Configuration.FILE_PATH, inputFileName + fileNumber + Configuration.FILE_EXTENSION)));
@@ -56,7 +56,7 @@ public class DatasetCompressor {
                 compressedRecords.add(compressedRecord);
                 currentTuple++;
             }
-            // +2 writing
+            // +2 writing for writing compressed record and for writing temporary gender index file
             while (!compressedRecords.isEmpty()) {
                 String compressedRecord = compressedRecords.removeFirst();
                 fw.write(compressedRecord + "\n");
@@ -76,7 +76,7 @@ public class DatasetCompressor {
         System.out.println("\nOverall Stats:");
         System.out.println("\tTime Elapsed: " + (System.currentTimeMillis() - startTime) + " Ms.");
         System.out.println("\tReads=" + reads + "\n\tWrites=" + writes);
-
+        System.out.println("Total Disk I/O's for Compressing the Dataset="+ (reads+writes));
         System.gc();
 
         return Configuration.COMPRESSED_DATASET_FILE_NAME + inputFileName + fileNumber + Configuration.FILE_EXTENSION;
@@ -107,7 +107,7 @@ public class DatasetCompressor {
     }
 
     public static String getTempGenderIndexFile() {
-        return "temp_gender_index.txt";
+        return "temp_gender_index" + Configuration.FILE_EXTENSION;
     }
 
     public static String getTuplePosition(String compressedRecord) {
