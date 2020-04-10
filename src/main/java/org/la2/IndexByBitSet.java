@@ -51,17 +51,16 @@ public class IndexByBitSet {
 		deleteUnnecessaryFiles(sortedFileNames, mergedFilePath);
 		System.out.println("\nTime To Complete Entire Process: " + (System.currentTimeMillis() - startTime) + " Ms.");
 
-		System.out.println("============== TPMMS Without BitMap Index================ ");
+		System.out.println("\n============== TPMMS Without BitMap Index================ ");
 		tpmmsStartTime = System.currentTimeMillis();
 		mergedFilePath = PhaseOne.mergeInputFiles(
-				Configuration.FILE_PATH + Configuration.TEST_INPUT_FILE1 + Configuration.FILE_EXTENSION,
-				Configuration.FILE_PATH + Configuration.TEST_INPUT_FILE2 + Configuration.FILE_EXTENSION);
+				Configuration.FILE_PATH + Configuration.INPUT_FILE_NAME + 1 + Configuration.FILE_EXTENSION,
+				Configuration.FILE_PATH + Configuration.INPUT_FILE_NAME + 2 + Configuration.FILE_EXTENSION);
 		twoPhaseMultiwayMergeSort = new TwoPhaseMultiwayMergeSort(DatasetCompressor.getEmployeeIdComparator(),
 				Configuration.OUTPUT_FILE_ID);
 		sortedFilePath = twoPhaseMultiwayMergeSort.start(mergedFilePath, -1);
 		DuplicateHandler.removeDuplicateAndWriteOutputFile(sortedFilePath);
-		System.out
-				.println("\nTime for TPMMS without BitMap: " + (System.currentTimeMillis() - tpmmsStartTime) + " Ms.");
+		System.out.println("\nTime for TPMMS without BitMap: " + (System.currentTimeMillis() - tpmmsStartTime) + " Ms.");
 	}
 
 	public static int numberOfTuplesPossibleToProcessAtOnce(long sizeOfEachTupleInBytes,
