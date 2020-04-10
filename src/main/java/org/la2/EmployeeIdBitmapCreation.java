@@ -1,10 +1,14 @@
 package org.la2;
 
-import tpmms.TwoPhaseMultiwayMergeSort;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.BitSet;
 import java.util.LinkedList;
+
+import tpmms.TwoPhaseMultiwayMergeSort;
 
 public class EmployeeIdBitmapCreation {
 	public static String createUncompressedAndCompressedIndex(String compressedDatasetFileName,
@@ -54,7 +58,7 @@ public class EmployeeIdBitmapCreation {
 
 		int bitsetStorageRequiredForEachRecord = DatasetCompressor.getNumOfLines() / 8;
 		boolean readingCompleted = false;
-		
+
 		int chunkSize = IndexByBitSet.numberOfTuplesPossibleToProcessAtOnce(DatasetCompressor.getCompressedTupleSize(),
 				(DatasetCompressor.getCompressedTupleSize() * 2) + bitsetStorageRequiredForEachRecord);
 		if (chunkSize == 0) {

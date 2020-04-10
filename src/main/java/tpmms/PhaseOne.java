@@ -1,6 +1,10 @@
 package tpmms;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 
 import org.la2.Configuration;
 
@@ -34,7 +38,7 @@ public class PhaseOne {
 			bufferedReader.close();
 			bufferedWriter.close();
 			System.out.println("Time to merge Sorted Files: " + (System.currentTimeMillis() - startTime) + " Ms.");
-	        System.gc();
+			System.gc();
 			return mergedFile.getAbsolutePath();
 		} catch (Exception e) {
 			e.printStackTrace();
