@@ -12,6 +12,8 @@ public interface Configuration {
 	String BLOCK_NAME = "Block";
 	String MERGED_FILE = "merged";
 	String OUTPUT_FILE_ID = "output";
+	String TEST_INPUT_FILE1 = "dataset1";
+	String TEST_INPUT_FILE2 = "dataset2";
 
 	String EMPID_BITMAP_FILE_NAME = "empIdBitMap";
 	String EMPID_COMPRESSED_BITMAP_FILE_NAME = "empIdCompressedBitMap";
