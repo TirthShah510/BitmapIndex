@@ -33,9 +33,9 @@ public class CompressedBitMap {
 			if (returnIndex >= 0) {
 				zeroCounter = returnIndex - previousSetBitIndex - 1;
 				compressedBitMap = createCompressedBitmap(zeroCounter);
+				pw.write(compressedBitMap);
 			}
 			lengthCounter++;
-			pw.write(compressedBitMap);
 		}
 		pw.write("\n");
 		pw.close();
