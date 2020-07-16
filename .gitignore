@@ -21,6 +21,9 @@
 Bitmap.iml
 .idea
 .DS_Store
+/.idea/*
+*.iml
+/target/*
 <<<<<<< HEAD
 src/.DS_Store
 src/main/.DS_Store
